@@ -1,19 +1,21 @@
 // src/Chat.js
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import io from "socket.io-client";
+import Members from "../Members";
 
 const socket = io("http://localhost:4000");
 
 const Chat = () => {
+  const navRef: any = useRef(null);
   const [name, setName] = useState(Math.random().toString(36).slice(2));
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<any>([]);
   const [userConnected, setUserConnected] = useState<any>();
 
-  useEffect(() => {
+  useMemo(() => {
     socket.emit("registerUser", name);
     socket.on("receiveMessage", (message: any) => {
-      setMessages((prevMessages: any) => [...prevMessages, message]);
+      setMessages((prevMessages: any) => [...prevMessages, ...message]);
     });
     socket.on("userList", (userList) => {
       setUserConnected(userList);
@@ -33,46 +35,70 @@ const Chat = () => {
     }
   };
 
-  const timeAgo = (timestamp: any) => {
-    const now = Date.now();
-    const seconds = Math.floor((now - timestamp) / 1000);
-
-    if (seconds < 60) return `${seconds} segundos atrás`;
-    if (seconds < 3600) return `${Math.floor(seconds / 60)} minutos atrás`;
-    return `${Math.floor(seconds / 3600)} horas atrás`;
-  };
+  useEffect(() => {
+    if (navRef.current) {
+      navRef.current.scrollTop = navRef.current.scrollHeight;
+    }
+  }, [messages]);
 
   return (
-    <div className="border h-screen flex flex-col relative">
-      <div className="flex flex-row justify-start items-center border w-full">
-        <h4 className="">chat</h4>
-      </div>
+    <div className="flex flex-col md:flex-row h-screen">
+      <div className="flex-1 bg-red-500 p-4">Coluna 1</div>
 
-      <div className="border flex flex-row justify-start ">
-        <div className="flex flex-col justify-start items-center gap-2">
-          {messages.map((msg: any, index: any) => (
-            <div
-              key={index}
-              className="flex flex-col justify-start items-start"
+      <div className="flex-1 bg-green-500 p-4">
+        <div className="relative flex flex-col justify-start items-center gap-2 h-full  border">
+          <div
+            ref={navRef}
+            className="w-full h-5/6 flex flex-col justify-start items-center overflow-x-auto "
+          >
+            <>
+              {messages?.map((msg: any, index: any) => (
+                <div
+                  key={index}
+                  className="w-full max-w-md p-4 border border-black"
+                >
+                  <div className="flex flex-row gap-2 justify-start items-center">
+                    <span>{msg.user}</span>
+                    <span className="text-xs">{msg.timestamp}</span>
+                  </div>
+                  <p className="break-words justify-start flex">
+                    {msg.message}
+                  </p>
+                </div>
+              ))}
+            </>
+          </div>
+
+          <div className="absolute bottom-0 w-full h-1/6 flex flex-col justify-start items-center">
+            <input
+              type="text"
+              className="w-full h-full rounded-lg"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Digite sua mensagem"
+              onKeyUp={(e) => {
+                if (e.key === "Enter") {
+                  sendMessage();
+                }
+              }}
+            />
+            <button
+              onKeyUp={(e) => {
+                if (e.key === "Enter") {
+                  sendMessage();
+                }
+              }}
+              className="absolute bottom-0 right-0 p-2 rounded-lg bg-blue-500 text-white"
+              onClick={sendMessage}
             >
-              <div className="flex flex-row gap-2 justify-start items-center">
-                <span>{msg.name}</span>
-                <span className="text-xs">{timeAgo(msg.timestamp)}</span>
-              </div>
-              {msg.message}
-            </div>
-          ))}
+              Enviar
+            </button>
+          </div>
         </div>
       </div>
 
-      <div>
-        <input
-          type="text"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Digite sua mensagem"
-        />
-        <button onClick={sendMessage}>Enviar</button>
+      <div className="flex-1 bg-blue-500 p-4">
+        <Members members={userConnected} />
       </div>
     </div>
   );
