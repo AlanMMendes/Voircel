@@ -45,6 +45,7 @@ const saveMessages = (messages) => {
 
 const users = {};
 
+
 io.on("connection", (socket) => {
   io.emit("receiveMessage", loadMessages());
   socket.on("registerUser", (name) => {
