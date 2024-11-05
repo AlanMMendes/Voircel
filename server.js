@@ -17,37 +17,11 @@ const io = new Server(server, {
 app.use(cors());
 app.use(express.json());
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const messagesFilePath = path.join(__dirname, "messages.json");
-
-const loadMessages = () => {
-  if (fs.existsSync(messagesFilePath)) {
-    const data = fs.readFileSync(messagesFilePath);
-    if (!data) {
-      return [];
-    }
-    try {
-      return JSON.parse(data);
-    } catch (error) {
-      console.error("Erro ao analisar JSON:", error);
-      return [];
-    }
-  }
-
-  return [];
-};
-
-const saveMessages = (messages) => {
-  fs.writeFileSync(messagesFilePath, JSON.stringify(messages, null, 2));
-};
 
 const users = {};
 
-
 io.on("connection", (socket) => {
-  io.emit("receiveMessage", loadMessages());
+ 
   socket.on("registerUser", (name) => {
     users[socket.id] = name;
     io.emit("userList", Object.values(users));
@@ -55,14 +29,11 @@ io.on("connection", (socket) => {
 
   socket.on("sendMessage", (message) => {
     const senderName = users[socket.id];
-    const messages = loadMessages();
-    messages.push({
+    io.emit("receiveMessage", [{
       time: new Date().toLocaleTimeString(),
       user: senderName,
       message: message,
-    });
-    saveMessages(messages);
-    io.emit("receiveMessage", messages);
+    }]);
   });
 
   socket.on("disconnect", () => {

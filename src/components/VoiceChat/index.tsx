@@ -11,7 +11,7 @@ const Chat = () => {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<any>([]);
   const [userConnected, setUserConnected] = useState<any>();
-  console.log(name)
+
 
   useMemo(() => {
     socket.emit("registerUser", name);
@@ -44,9 +44,8 @@ const Chat = () => {
 
   return (
     <div className="flex flex-col md:flex-row h-screen">
-      <div className=" bg-red-500 p-4">Servidores</div>
-      <div className="w-1/4 p-4">Chats</div>
-      <div className="flex-1 bg-green-500 p-4">
+     
+      <div className="flex-1 bg-zinc-950 p-4">
         <div className="relative flex flex-col justify-start items-center gap-2 h-full">
           <div
             ref={navRef}
@@ -60,7 +59,7 @@ const Chat = () => {
                 >
                   <div className="flex flex-row gap-2 justify-start items-center w-full">
                     <span>{msg.user}</span>
-                    <span className="text-xs">{msg.timestamp}</span>
+                    <span className="text-xs">{msg.time}</span>
                   </div>
                   <p className="break-words justify-start flex">
                     {msg.message}
@@ -70,10 +69,10 @@ const Chat = () => {
             
           </div>
 
-          <div className="absolute bottom-0 w-full h-1/6 flex flex-col justify-start items-center">
+          <div className="absolute bottom-0 w-full h-20 flex flex-col justify-start items-center">
             <input
               type="text"
-              className="w-full h-full rounded-lg"
+              className="w-full h-full rounded-lg px-2"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Digite sua mensagem"
@@ -89,7 +88,7 @@ const Chat = () => {
                   sendMessage();
                 }
               }}
-              className="absolute bottom-0 right-0 p-2 rounded-lg bg-blue-500 text-white"
+              className="absolute bottom-0 right-0 p-2 rounded-lg bg-blue-500 text-white mb-2 mr-2"
               onClick={sendMessage}
             >
               Enviar
@@ -98,9 +97,9 @@ const Chat = () => {
         </div>
       </div>
 
-      <div className="bg-blue-500 p-4">
+     
         <Members members={userConnected} />
-      </div>
+     
     </div>
   );
 };
